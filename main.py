@@ -7,20 +7,13 @@ import os
 # FIX: Решение проблемы OpenMP conflict с FAISS
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 
-from typing import TypedDict, Annotated, List, Dict, Any, Optional
+from typing import TypedDict, List, Dict, Any, Optional
 from langgraph.graph import StateGraph, END
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 import json
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field, ValidationError
-try:
-    import jsonrepair
-    HAS_JSONREPAIR = True
-except ImportError:
-    HAS_JSONREPAIR = False
-    # Fallback: используем встроенный json с обработкой ошибок
-    jsonrepair = None
 
 # Загрузка переменных окружения
 load_dotenv()
@@ -32,7 +25,7 @@ load_dotenv()
 
 def safe_json_parse(response_text: str, fallback: Any = None) -> Any:
     """
-    Надёжный парсинг JSON из ответа LLM с использованием jsonrepair и валидации
+    Надёжный парсинг JSON из ответа LLM с автоматическим исправлением типичных ошибок
     """
     try:
         # Пробуем найти JSON в тексте
@@ -53,14 +46,7 @@ def safe_json_parse(response_text: str, fallback: Any = None) -> Any:
         try:
             return json.loads(json_str)
         except json.JSONDecodeError:
-            # Используем jsonrepair для исправления (если доступен)
-            if HAS_JSONREPAIR and jsonrepair:
-                try:
-                    repaired_json = jsonrepair.repair_json(json_str)
-                    return json.loads(repaired_json)
-                except Exception:
-                    pass
-            # Fallback: пытаемся исправить простые ошибки вручную
+            # Пытаемся исправить простые ошибки вручную
             try:
                 # Убираем trailing commas
                 json_str = json_str.replace(',}', '}').replace(',]', ']')
@@ -3356,8 +3342,6 @@ def create_research_agent():
     С условными переходами для агентного поведения
     """
     print("\n🔧 Создание LangGraph агента с агентным поведением...")
-    
-    from langgraph.graph import StateGraph, END
     
     # Создаём граф
     workflow = StateGraph(AgentState)
