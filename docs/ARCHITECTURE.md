@@ -435,16 +435,3 @@ workflow.add_edge("custom_analyzer", "ideator")
 
 ---
 
-## Best Practices
-
-✅ **Модульность** — каждый компонент = отдельная функция  
-✅ **Конфигурируемость** — все параметры в config.py  
-✅ **Type hints** — AgentState с TypedDict  
-✅ **Error handling** — try-except на каждом узле  
-✅ **Graceful degradation** — fallback значения при ошибках  
-✅ **Rate limiting** — задержки между API вызовами  
-✅ **Anti-hallucination** — все утверждения с цитатами  
-
----
-
-**Примечание:** Эта архитектура следует best practices для research agents: мульти-источники, дедупликация, гибридное ранжирование, структурированный анализ, anti-hallucination.
